@@ -35,14 +35,14 @@ async function handleAction(req, res) {
 
     const tokenData = await getToken();
 
-    const protectedResponse = await axios.get(
-      "http://localhost:3000/protected/email-summary",
-      {
-        headers: {
-          Authorization: `Bearer ${tokenData.access_token}`
-        }
+    const appPort = process.env.PORT || 3000;
+    const protectedUrl = `http://127.0.0.1:${appPort}/protected/email-summary`;
+
+    const protectedResponse = await axios.get(protectedUrl, {
+      headers: {
+        Authorization: `Bearer ${tokenData.access_token}`
       }
-    );
+    });
 
     return res.json({
       status: "allowed",
@@ -57,11 +57,14 @@ async function handleAction(req, res) {
       protected_data: protectedResponse.data
     });
   } catch (error) {
-    console.error("handleAction error:", error.message);
+    console.error(
+      "handleAction error:",
+      error.response?.data || error.message || error
+    );
 
     return res.status(500).json({
       status: "error",
-      reason: error.message || "internal server error"
+      reason: "internal server error"
     });
   }
 }
