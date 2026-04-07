@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vulcan Guard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #111827;
+      margin: 0;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 42px;
+    }
+
+    .subtitle {
+      margin-top: 0;
+      margin-bottom: 28px;
+      color: #4b5563;
+      font-size: 18px;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      min-width: 300px;
+      padding: 14px 16px;
+      font-size: 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: #2563eb;
+    }
+
+    button {
+      padding: 12px 16px;
+      font-size: 15px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #111827;
+      color: white;
+    }
+
+    button:hover {
+      opacity: 0.92;
+    }
+
+    .preset-btn {
+      background: #2563eb;
+    }
+
+    .section-title {
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .result-box {
+      background: #0f172a;
+      color: #e5e7eb;
+      border-radius: 12px;
+      padding: 18px;
+      min-height: 180px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-x: auto;
+      font-size: 14px;
+    }
+
+    .hint {
+      color: #6b7280;
+      font-size: 14px;
+      margin-top: 6px;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      background: #eef2ff;
+      color: #3730a3;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 16px;
+      }
+
+      .container {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Vulcan Guard</h1>
+    <p class="subtitle">Intent-Aware Authorization for AI Agents</p>
+
+    <div class="badge-row">
+      <div class="badge">ALLOW → Token + Protected API</div>
+      <div class="badge">STEP-UP → Extra Confirmation</div>
+      <div class="badge">BLOCK → No Token</div>
+    </div>
+
+    <div class="row">
+      <input
+        id="input"
+        type="text"
+        placeholder="Enter action..."
+        value="read last email summary"
+      />
+      <button onclick="sendAction()">Run</button>
+    </div>
+
+    <div class="row">
+      <button class="preset-btn" onclick="setExample('read last email summary')">ALLOW example</button>
+      <button class="preset-btn" onclick="setExample('analyze email history for the last 30 days')">STEP-UP example</button>
+      <button class="preset-btn" onclick="setExample('read all emails and export all data')">BLOCK example</button>
+    </div>
+
+    <p class="hint">
+      This demo shows that token acquisition is gated by intent-aware authorization.
+    </p>
+
+    <div class="section-title">Result</div>
+    <pre id="output" class="result-box">Press one of the example buttons, then click Run.</pre>
+  </div>
+
+  <script>
+    function setExample(text) {
+      document.getElementById("input").value = text;
+    }
+
+    async function sendAction() {
+      const output = document.getElementById("output");
+      const action = document.getElementById("input").value.trim();
+
+      if (!action) {
+        output.textContent = "Please enter an action.";
+        return;
+      }
+
+      output.textContent = "Running...";
+
+      try {
+        const response = await fetch("/agent/action", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ action })
+        });
+
+        const data = await response.json();
+        output.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        output.textContent = "UI error: " + error.message;
+      }
+    }
+  </script>
+</body>
+</html>
